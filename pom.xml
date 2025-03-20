@@ -1,20 +1,28 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.hse</groupId>
+	<artifactId>finance-app</artifactId>
+	<version>1.0-SNAPSHOT</version>
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.2</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<version>3.2.0</version>
+		<relativePath/>
 	</parent>
-	<groupId>kpoApplication</groupId>
-	<artifactId>demo</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>kpoApplication</name>
-	<description>Demo project for Spring Boot</description>
+
 	<properties>
-		<java.version>17</java.version> <!-- Используйте стабильную версию Java -->
+		<java.version>17</java.version>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<jacoco.version>0.8.12</jacoco.version>
+		<enable.preview>true</enable.preview>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -28,14 +36,9 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.30</version> <!-- Обновите Lombok -->
+			<version>1.18.32</version>
+			<optional>true</optional>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jetbrains</groupId>
-			<artifactId>annotations</artifactId>
-			<version>24.0.1</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -43,8 +46,65 @@
 			<version>5.11.0</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>1.9.19</version>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+			<version>1.9.19</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.13.3</version>
+		</dependency>
+
+		<!-- Spring AOP (если используете Spring) -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+			<version>5.3.23</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aspects</artifactId>
+			<version>5.3.23</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.9.0</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.8.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.8.1</version>
+			<scope>test</scope>
+		</dependency>
+
 
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -52,22 +112,26 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M5</version> <!-- Обновите Surefire Plugin -->
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<argLine>-XX:+EnableDynamicAgentLoading</argLine>
-					<testFailureIgnore>true</testFailureIgnore>
-					<forkCount>2</forkCount>
-					<reuseForks>true</reuseForks>
+					<mainClass>hse.kpo.KpoApplication</mainClass>
 				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.10</version> <!-- Обновите Jacoco -->
+				<version>${jacoco.version}</version>
 				<executions>
 					<execution>
+						<id>prepare-agent</id>
 						<goals>
 							<goal>prepare-agent</goal>
 						</goals>
@@ -79,8 +143,41 @@
 							<goal>report</goal>
 						</goals>
 					</execution>
+					<execution>
+						<id>check-coverage</id>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.80</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<source>17</source>
+					<target>17</target>
+					<compilerArgs>
+						<arg>--enable-preview</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>
